@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { TabsFactory, TabListData } from "./utils/TabsFactory.ts";
-const tabListData: TabListData[] = [];
 /**
  * Define props for the TabsContainer component.
  * 
@@ -23,6 +22,7 @@ export interface TCProps {
    * @memberof TCProps
    */
   readonly tabList: string[];
+  readonly tabListData: TabListData[];
   /**
    * A list of user permissions used to filter the tab list.
    * 
@@ -67,7 +67,7 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
 
   constructor(props: TCProps) {
     super(props);
-    this.tabsFactory = new TabsFactory(tabListData);
+    this.tabsFactory = new TabsFactory(props.tabListData);
   }
   /**
    * Build a list of Tabs to display. Uses the 'tabList' and
@@ -81,7 +81,7 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
   getTabList(): any[] {
     return this.tabsFactory
       .getTabsList(this.props.tabList, this.props.permissions)
-      .map((tab, index) => {
+      .map((tab: any, index: number) => {
         return (
           <Tab key={index}>
             {tab.name}
@@ -101,7 +101,7 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
   getTabPanels(): any[] {
     return this.tabsFactory
       .getTabsList(this.props.tabList, this.props.permissions)
-      .map((tab, index) => {
+      .map((tab: any, index: number) => {
         // TODO: Use this opportunity to apply any props
         const props = {
           name: tab.name,
