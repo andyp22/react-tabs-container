@@ -1,4 +1,3 @@
+import TabsContainer from './TabsContainer.tsx';
 
-export function npmPackageTester() {
-  console.log('This is a test for a new npm package.');
-}
+export default { TabsContainer };
