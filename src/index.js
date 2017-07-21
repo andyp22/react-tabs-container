@@ -1,3 +1,3 @@
-import TabsContainer from './TabsContainer.tsx';
+import { TabsContainer, TCProps } from './TabsContainer.tsx';
 
-export default { TabsContainer };
+export default { TabsContainer, TCProps };
