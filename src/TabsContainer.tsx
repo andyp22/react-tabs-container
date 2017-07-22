@@ -22,6 +22,12 @@ export interface TCProps {
    * @memberof TCProps
    */
   readonly tabList: string[];
+  /**
+   * A list of objects used to build the tabs and tab content.
+   * 
+   * @type {TabListData[]}
+   * @memberof TCProps
+   */
   readonly tabListData: TabListData[];
   /**
    * A list of user permissions used to filter the tab list.
@@ -40,13 +46,19 @@ export interface TCProps {
   readonly containerName: string;
   /**
    * Type name designating how this tab container is being used.
-   * @example 'vendor', 'dealership', 'sub-component'
+   * @example 'top-level', 'sub-component', 'tab_name sub-component'
    * 
    * @type {string}
    * @memberof TCProps
    */
   readonly viewType: string;
-  readonly storeId: string;
+  /**
+   * Data to be passed thru to the tab panel.
+   * 
+   * @type {*}
+   * @memberof TCProps
+   */
+  readonly dataPassThru: any;
 }
 
 /**
@@ -70,7 +82,7 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
     this.tabsFactory = new TabsFactory(props.tabListData);
   }
   /**
-   * Build a list of Tabs to display. Uses the 'tabList' and
+   * Get a list of Tab components to display. Uses the 'tabList' and
    * 'permissions' props to filter and create only the panels which
    * can be seen by the current user.
    * 
@@ -90,8 +102,8 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
       });
   }
   /**
-   * Build a list of TabPanels to display. Uses the 'tabList' and
-   * 'permissions' props to filter and create only the panels which
+   * Get a list of TabPanel components to display. Uses the 'tabList'
+   * and 'permissions' props to filter and create only the panels which
    * can be seen by the current user.
    * 
    * @returns {TabPanel[]} 
@@ -102,12 +114,11 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
     return this.tabsFactory
       .getTabsList(this.props.tabList, this.props.permissions)
       .map((tab: any, index: number) => {
-        // TODO: Use this opportunity to apply any props
         const props = {
           name: tab.name,
           viewType: this.props.viewType,
           permissions: this.props.permissions,
-          storeId: this.props.storeId
+          dataPassThru: this.props.dataPassThru
         };
         return (
           <TabPanel key={index}>
@@ -117,7 +128,7 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
       });
   }
   /**
-   * Gets the 'deafaultTabIndex' from localStorage or returns
+   * Gets the 'defaultTabIndex' from localStorage or returns
    * zero if empty.
    * 
    * @returns {number} 
