@@ -71,7 +71,7 @@ export class TabsFactory {
       .filter((tabData: TabListData) => {
         if (
           tabs.find(tab => {
-            return tab === tabData.id;
+            return tab === tabData.id || tab === 'all';
           })
         ) {
           return true;
