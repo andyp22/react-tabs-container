@@ -1,65 +1,7 @@
+import * as ReactTabsContainer from '../react-tabs-container';
 import * as React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { TabsFactory, TabListData } from "./utils/TabsFactory.ts";
-/**
- * Define props for the TabsContainer component.
- * 
- * @export
- * @interface TCProps
- */
-export interface TCProps {
-  /**
-   * Optional classes to append to the parent class list.
-   * 
-   * @type {string}
-   * @memberof TCProps
-   */
-  readonly classes?: string;
-  /**
-   * A list of tabs which can be displayed in this container.
-   * 
-   * @type {string[]}
-   * @memberof TCProps
-   */
-  readonly tabList: string[];
-  /**
-   * A list of objects used to build the tabs and tab content.
-   * 
-   * @type {TabListData[]}
-   * @memberof TCProps
-   */
-  readonly tabListData: TabListData[];
-  /**
-   * A list of user permissions used to filter the tab list.
-   * 
-   * @type {string[]}
-   * @memberof TCProps
-   */
-  readonly permissions: string[];
-  /**
-   * The name of the tab container. Used to store the selected state
-   * of the container in local storage.
-   * 
-   * @type {string}
-   * @memberof TCProps
-   */
-  readonly containerName: string;
-  /**
-   * Type name designating how this tab container is being used.
-   * @example 'top-level', 'sub-component', 'tab_name sub-component'
-   * 
-   * @type {string}
-   * @memberof TCProps
-   */
-  readonly viewType: string;
-  /**
-   * Data to be passed thru to the tab panel.
-   * 
-   * @type {*}
-   * @memberof TCProps
-   */
-  readonly dataPassThru: any;
-}
+import { TabsFactory } from "./utils/TabsFactory.ts";
 
 /**
  * Container component used to build groups of tabs.
@@ -68,7 +10,7 @@ export interface TCProps {
  * @class TabsContainer
  * @extends {React.Component<TCProps, undefined>}
  */
-export class TabsContainer extends React.Component<TCProps, undefined> {
+export class TabsContainer extends React.Component<ReactTabsContainer.TCProps, undefined> {
   /**
    * A factory for creating tab panel components.
    * 
@@ -76,10 +18,54 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
    * @memberof TabsContainer
    */
   tabsFactory: TabsFactory;
+  tabMap: Map<number, string>;
 
-  constructor(props: TCProps) {
+  constructor(props: ReactTabsContainer.TCProps) {
     super(props);
     this.tabsFactory = new TabsFactory(props.tabListData);
+    this.tabMap = new Map<number, string>();
+  }
+  /**
+   * Render the component. Component life-cycle hook.
+   * 
+   * @returns 
+   * 
+   * @memberof TabsContainer
+   */
+  render() {
+    const props = this.props;
+    const classes = props.classes
+      ? `tabs-container ${props.classes}`
+      : "tabs-container";
+    return (
+      <div className={classes}>
+        <Tabs
+          defaultIndex={this.getSelectedTab()}
+          onSelect={(index: number) => {
+            localStorage.setItem(this.getLocalStorageName(), index.toString());
+            props.onChange(this.tabMap.get(index));
+          }}
+        >
+          <TabList>
+            {this.getTabList()}
+          </TabList>
+          {this.getTabPanels()}
+        </Tabs>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    const tabId: string = this.tabMap.get(this.getSelectedTab());
+    if(tabId) {
+      this.props.onChange(tabId);
+    }
+  }
+
+  componentDidUpdate(prevProps: ReactTabsContainer.TCProps) {
+    if(this.props.permissions !== prevProps.permissions) {
+      this.props.onChange(this.tabMap.get(this.getSelectedTab()));
+    }
   }
   /**
    * Get a list of Tab components to display. Uses the 'tabList' and
@@ -91,9 +77,11 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
    * @memberof AdminPageView
    */
   getTabList(): any[] {
+    this.tabMap.clear();
     return this.tabsFactory
       .getTabsList(this.props.tabList, this.props.permissions)
       .map((tab: any, index: number) => {
+        this.tabMap.set(index, tab.id);
         return (
           <Tab key={index}>
             {tab.name}
@@ -152,34 +140,6 @@ export class TabsContainer extends React.Component<TCProps, undefined> {
    */
   getLocalStorageName(): string {
     return `${this.props.containerName}_defaultTabIndex`;
-  }
-  /**
-   * Render the component. Component life-cycle hook.
-   * 
-   * @returns 
-   * 
-   * @memberof TabsContainer
-   */
-  render() {
-    const props = this.props;
-    const classes = props.classes
-      ? `tabs-container ${props.classes}`
-      : "tabs-container";
-    return (
-      <div className={classes}>
-        <Tabs
-          defaultIndex={this.getSelectedTab()}
-          onSelect={(index: number) => {
-            localStorage.setItem(this.getLocalStorageName(), index.toString());
-          }}
-        >
-          <TabList>
-            {this.getTabList()}
-          </TabList>
-          {this.getTabPanels()}
-        </Tabs>
-      </div>
-    );
   }
 }
 
